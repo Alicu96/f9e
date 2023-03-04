@@ -109,9 +109,9 @@ class Telegram(RPCHandler):
         section.
         """
         self._keyboard: List[List[Union[str, KeyboardButton]]] = [
-            ['/daily', '/profit', '/balance', '/forceexit'],
+            ['/reload_config', '/profit', '/balance', '/forceexit'],
             ['/stopentry', '/status table', '/show_config'],
-            ['/reload_config', '/start', '/stop', '/help']
+            ['/daily', '/show_charts', '/start', '/stop', '/help']
         ]
         # do not allow commands with mandatory arguments and critical cmds
         # TODO: DRY! - its not good to list all valid cmds here. But otherwise
@@ -198,7 +198,8 @@ class Telegram(RPCHandler):
             CommandHandler('health', self._health),
             CommandHandler('help', self._help),
             CommandHandler('version', self._version),
-            CommandHandler('marketdir', self._changemarketdir)
+            CommandHandler('marketdir', self._changemarketdir),
+            CommandHandler('show_charts', self._show_charts)
         ]
         callbacks = [
             CallbackQueryHandler(self._status_table, pattern='update_status_table'),
@@ -1465,6 +1466,20 @@ class Telegram(RPCHandler):
                        f'<pre>{edge_pairs_tab}</pre>')
 
             self._send_msg(message, parse_mode=ParseMode.HTML)
+
+
+    @authorized_only
+    def _show_charts(self, update: Update, context: CallbackContext) -> None:
+        """show chart btc handler
+        """
+        message = (
+            "market info: https://www.google.com/finance/markets/cryptocurrencies\n"
+            "BTC/USDT chart: https://www.google.com/finance/quote/BTC-USDT\n"
+            "ETH/USDT chart: https://www.google.com/finance/quote/ETH-USDT\n"
+            "XRP/USDT chart: https://www.google.com/finance/quote/XRP-USDT\n"
+        )
+        self._send_msg(message, parse_mode=ParseMode.MARKDOWN)
+
 
     @authorized_only
     def _help(self, update: Update, context: CallbackContext) -> None:
