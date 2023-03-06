@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import json
 import pandas as pd
 import plotly.graph_objects as go
+import requests
 import io
 
 import arrow
