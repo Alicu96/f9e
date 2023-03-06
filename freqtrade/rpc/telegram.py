@@ -1476,13 +1476,6 @@ class Telegram(RPCHandler):
     def _show_charts(self, update: Update, context: CallbackContext) -> None:
         """show chart btc handler
         """
-        message = (
-            "market info: https://www.google.com/finance/markets/cryptocurrencies\n"
-            "BTC/USDT chart: https://www.google.com/finance/quote/BTC-USDT\n"
-            "ETH/USDT chart: https://www.google.com/finance/quote/ETH-USDT\n"
-            "XRP/USDT chart: https://www.google.com/finance/quote/XRP-USDT\n"
-        )
-        self._send_msg(message, parse_mode=ParseMode.MARKDOWN)
         # send photo
         # Set the API endpoint and parameters
         url = 'https://api.binance.com/api/v3/klines'
@@ -1528,6 +1521,13 @@ class Telegram(RPCHandler):
                 'TelegramError: %s! Giving up on that message.',
                 telegram_err.message
             )
+        message = (
+            "market info: https://www.google.com/finance/markets/cryptocurrencies\n"
+            "BTC/USDT chart: https://www.google.com/finance/quote/BTC-USDT\n"
+            "ETH/USDT chart: https://www.google.com/finance/quote/ETH-USDT\n"
+            "XRP/USDT chart: https://www.google.com/finance/quote/XRP-USDT\n"
+        )
+        self._send_msg(message, parse_mode=ParseMode.MARKDOWN)
 
 
     @authorized_only
