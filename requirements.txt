@@ -55,3 +55,7 @@ schedule==1.1.0
 #WS Messages
 websockets==10.4
 janus==1.0.0
+
+#send photo via telegram
+kaleido==0.2.1
+plotly==5.13.1

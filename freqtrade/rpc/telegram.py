@@ -14,6 +14,10 @@ from html import escape
 from itertools import chain
 from math import isnan
 from typing import Any, Callable, Dict, List, Optional, Union
+import json
+import pandas as pd
+import plotly.graph_objects as go
+import io
 
 import arrow
 from tabulate import tabulate
@@ -1479,6 +1483,51 @@ class Telegram(RPCHandler):
             "XRP/USDT chart: https://www.google.com/finance/quote/XRP-USDT\n"
         )
         self._send_msg(message, parse_mode=ParseMode.MARKDOWN)
+        # send photo
+        # Set the API endpoint and parameters
+        url = 'https://api.binance.com/api/v3/klines'
+        params = {'symbol': 'BTCUSDT', 'interval': '1d', 'limit': 1000}
+        # Send the API request and get the response
+        response = requests.get(url, params=params)
+        data = json.loads(response.text)
+        # Convert the data into a pandas dataframe and set the column names
+        df = pd.DataFrame(data, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time',
+                                        'quote_asset_volume', 'number_of_trades', 'taker_buy_base_asset_volume',
+                                        'taker_buy_quote_asset_volume', 'ignore'])
+        # Convert the timestamp column from milliseconds to datetime
+        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+        # Set the datetime column as the index
+        df.set_index('timestamp', inplace=True)
+        # Convert the data types of the remaining columns from object to float
+        df = df.astype(float)
+        # Create a candlestick chart using Plotly
+        fig = go.Figure(data=[go.Candlestick(x=df.index,
+                                            open=df['open'],
+                                            high=df['high'],
+                                            low=df['low'],
+                                            close=df['close'])])
+        # Set the chart title and axis labels
+        fig.update_layout(title='BTC/USDT', xaxis_title='Time', yaxis_title='Price')
+        # Save the chart image to a PNG file
+        img_bytes = fig.to_image(format="png", engine="kaleido")
+        try:
+            try:
+                self._updater.bot.send_photo(
+                    self._config['telegram']['chat_id'],
+                    photo=img_bytes
+                )
+            except NetworkError as network_err:
+                # Sometimes the telegram server resets the current connection,
+                # if this is the case we send the message again.
+                logger.warning(
+                    'Telegram NetworkError: %s!',
+                    network_err.message
+                )
+        except TelegramError as telegram_err:
+            logger.warning(
+                'TelegramError: %s! Giving up on that message.',
+                telegram_err.message
+            )
 
 
     @authorized_only
